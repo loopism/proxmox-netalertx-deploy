@@ -1,0 +1,280 @@
+# NetAlertX Configuration File Template
+# This file contains the core configuration settings for NetAlertX
+# Copy this to app.conf and modify as needed
+
+# ============================================================================
+# GENERAL SETTINGS
+# ============================================================================
+
+# Application name and version info
+APP_NAME = "NetAlertX"
+APP_VERSION = "auto"
+
+# Web interface settings
+REPORT_DASHBOARD_URL = "http://localhost:20211"
+API_ENABLED = True
+API_PORT = 20212
+
+# ============================================================================
+# NETWORK SCANNING SETTINGS
+# ============================================================================
+
+# Subnets to scan (Python list format)
+# Examples:
+# SCAN_SUBNETS = ['192.168.1.0/24']
+# SCAN_SUBNETS = ['192.168.1.0/24', '10.0.0.0/24']
+# SCAN_SUBNETS = ['192.168.1.0/24 --interface=eth0']
+SCAN_SUBNETS = ['192.168.1.0/24']
+
+# Scan schedule (cron format)
+# Every 5 minutes: */5 * * * *
+# Every hour: 0 * * * *
+# Every day at 2 AM: 0 2 * * *
+SCAN_CRON = '*/5 * * * *'
+
+# ARP scan settings
+ARPSCAN_RUN_TIMEOUT = 30
+ARPSCAN_MAC_IGNORE_LIST = []
+
+# ============================================================================
+# DATABASE SETTINGS
+# ============================================================================
+
+# Database file path
+DB_PATH = '/app/db/app.db'
+
+# Database maintenance settings
+DB_BACKUP_ENABLED = True
+DB_BACKUP_SCHEDULE = '0 2 * * *'  # Daily at 2 AM
+DB_RETENTION_DAYS = 90
+
+# ============================================================================
+# PLUGIN SETTINGS
+# ============================================================================
+
+# Default plugins to load
+LOADED_PLUGINS = ['ARPSCAN']
+
+# Plugin-specific settings
+PLUGINS_CUSTOM_PATH = ''
+
+# ARP Scan Plugin
+ARPSCAN_ENABLED = True
+ARPSCAN_CMD = 'arp-scan'
+
+# Pi-hole Plugin (uncomment and configure if using)
+# PIHOLE_ENABLED = False
+# PIHOLE_DB_PATH = '/etc/pihole/pihole-FTL.db'
+# PIHOLE_DHCP_ENABLED = False
+# PIHOLE_DHCP_PATH = '/etc/pihole/dhcp.leases'
+
+# DHCP Leases Plugin (uncomment and configure if using)
+# DHCPLEASES_ENABLED = False
+# DHCPLEASES_PATH = '/var/lib/dhcp/dhcpd.leases'
+
+# UniFi Plugin (uncomment and configure if using)
+# UNIFI_ENABLED = False
+# UNIFI_URL = 'https://unifi-controller:8443'
+# UNIFI_USERNAME = 'admin'
+# UNIFI_PASSWORD = 'password'
+# UNIFI_SITE = 'default'
+
+# ============================================================================
+# NOTIFICATION SETTINGS
+# ============================================================================
+
+# Email notifications
+EMAIL_ENABLED = False
+EMAIL_SMTP_SERVER = 'smtp.gmail.com'
+EMAIL_SMTP_PORT = 587
+EMAIL_USERNAME = ''
+EMAIL_PASSWORD = ''
+EMAIL_RECIPIENTS = ['admin@example.com']
+
+# Webhook notifications
+WEBHOOK_ENABLED = False
+WEBHOOK_URL = ''
+WEBHOOK_PAYLOAD = 'json'
+
+# NTFY notifications
+NTFY_ENABLED = False
+NTFY_URL = 'https://ntfy.sh'
+NTFY_TOPIC = 'netalertx'
+
+# Pushover notifications
+PUSHOVER_ENABLED = False
+PUSHOVER_TOKEN = ''
+PUSHOVER_USER = ''
+
+# Apprise notifications (supports 80+ services)
+APPRISE_ENABLED = False
+APPRISE_URL = ''
+
+# ============================================================================
+# ALERTING RULES
+# ============================================================================
+
+# New device alerts
+ALERT_NEW_DEVICES = True
+ALERT_NEW_DEVICES_COOLDOWN = 300  # seconds
+
+# Device down alerts
+ALERT_DEVICE_DOWN = True
+ALERT_DEVICE_DOWN_THRESHOLD = 3  # missed scans
+
+# IP change alerts
+ALERT_IP_CHANGES = True
+
+# MAC change alerts
+ALERT_MAC_CHANGES = True
+
+# Unknown device alerts
+ALERT_UNKNOWN_DEVICES = True
+
+# ============================================================================
+# WEB INTERFACE SETTINGS
+# ============================================================================
+
+# Interface theme
+UI_THEME = 'auto'  # auto, light, dark
+
+# Language
+UI_LANGUAGE = 'en'
+
+# Report settings
+REPORT_ENABLED = True
+REPORT_SCHEDULE = '0 8 * * *'  # Daily at 8 AM
+REPORT_TEMPLATE = 'default'
+
+# ============================================================================
+# LOGGING SETTINGS
+# ============================================================================
+
+# Log level: DEBUG, INFO, WARNING, ERROR
+LOG_LEVEL = 'INFO'
+
+# Log file path
+LOG_PATH = '/app/log/'
+
+# Log rotation
+LOG_MAX_SIZE = '10MB'
+LOG_MAX_FILES = 5
+
+# Console logging
+LOG_CONSOLE_ENABLED = True
+
+# ============================================================================
+# SECURITY SETTINGS
+# ============================================================================
+
+# API authentication
+API_AUTH_ENABLED = False
+API_KEY = ''
+
+# Web interface authentication
+WEB_AUTH_ENABLED = False
+WEB_USERNAME = 'admin'
+WEB_PASSWORD = 'admin123'
+
+# IP whitelist (empty list = allow all)
+IP_WHITELIST = []
+
+# ============================================================================
+# PERFORMANCE SETTINGS
+# ============================================================================
+
+# Maximum concurrent scans
+MAX_CONCURRENT_SCANS = 3
+
+# Scan timeout (seconds)
+SCAN_TIMEOUT = 60
+
+# Cache settings
+CACHE_ENABLED = True
+CACHE_TTL = 300  # seconds
+
+# Memory limits
+MEMORY_LIMIT_MB = 512
+
+# ============================================================================
+# DEVICE SETTINGS
+# ============================================================================
+
+# Device categorization
+AUTO_CATEGORIZE_ENABLED = True
+
+# Device naming
+AUTO_NAMING_ENABLED = True
+
+# MAC vendor resolution
+MAC_VENDOR_ENABLED = True
+MAC_VENDOR_UPDATE_SCHEDULE = '0 3 * * 0'  # Weekly on Sunday at 3 AM
+
+# ============================================================================
+# NETWORK DISCOVERY SETTINGS
+# ============================================================================
+
+# Discovery methods
+DISCOVERY_ARPSCAN_ENABLED = True
+DISCOVERY_PING_ENABLED = True
+DISCOVERY_DHCP_ENABLED = False
+
+# Port scanning
+NMAP_ENABLED = False
+NMAP_TIMEOUT = 30
+NMAP_PORTS = '22,80,443,8080'
+
+# ============================================================================
+# BACKUP AND MAINTENANCE
+# ============================================================================
+
+# Automatic backups
+BACKUP_ENABLED = True
+BACKUP_SCHEDULE = '0 1 * * *'  # Daily at 1 AM
+BACKUP_RETENTION_DAYS = 30
+BACKUP_PATH = '/app/backups'
+
+# Maintenance tasks
+MAINTENANCE_ENABLED = True
+MAINTENANCE_SCHEDULE = '0 2 * * *'  # Daily at 2 AM
+
+# Update checks
+UPDATE_CHECK_ENABLED = True
+UPDATE_CHECK_SCHEDULE = '0 4 * * *'  # Daily at 4 AM
+
+# ============================================================================
+# INTEGRATION SETTINGS
+# ============================================================================
+
+# Home Assistant integration
+HASS_ENABLED = False
+HASS_URL = 'http://homeassistant:8123'
+HASS_TOKEN = ''
+
+# MQTT integration
+MQTT_ENABLED = False
+MQTT_BROKER = 'localhost'
+MQTT_PORT = 1883
+MQTT_USERNAME = ''
+MQTT_PASSWORD = ''
+MQTT_TOPIC_PREFIX = 'netalertx'
+
+# ============================================================================
+# ADVANCED SETTINGS
+# ============================================================================
+
+# Development mode
+DEV_MODE = False
+
+# Debug logging
+DEBUG_ENABLED = False
+
+# Custom CSS
+CUSTOM_CSS_ENABLED = False
+CUSTOM_CSS_PATH = '/app/config/custom.css'
+
+# Timezone
+TIMEZONE = 'UTC'
+
+# Date format
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
