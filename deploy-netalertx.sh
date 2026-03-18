@@ -80,21 +80,31 @@ get_next_vmid() {
     echo $vmid
 }
 
+# Function to extract ubuntu templates from pveam available lines
+extract_ubuntu_templates() {
+    pveam available 2>/dev/null | grep -Eo 'ubuntu-[0-9]+\.[0-9]+-standard_[^[:space:]]+' | sort -u
+}
+
 # Function to select Ubuntu template
 select_ubuntu_template() {
     local version=$1
-    case $version in
-        "22")
-            echo "ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
-            ;;
-        "24")
-            echo "ubuntu-24.04-standard_24.04-1_amd64.tar.zst"
-            ;;
-        *)
-            print_error "Unsupported Ubuntu version: $version"
-            exit 1
-            ;;
-    esac
+    local major="$version"
+    local template
+    template=$(extract_ubuntu_templates | grep -E "ubuntu-${major}\.[0-9]+-standard_" | sort -u | head -n1)
+    if [ -z "$template" ]; then
+        print_error "No template matching Ubuntu major version ${major} found"
+        exit 1
+    fi
+    echo "$template"
+}
+
+get_ubuntu_templates_by_major() {
+    local major=$1
+    extract_ubuntu_templates | grep -E "ubuntu-${major}\.[0-9]+-standard_" | sort -u
+}
+
+get_ubuntu_major_options() {
+    extract_ubuntu_templates | sed -E 's/ubuntu-([0-9]+)\..*/\1/' | sort -u
 }
 
 # Function to check if template exists
@@ -145,14 +155,40 @@ interactive_config() {
     read -p "Enter hostname [$DEFAULT_HOSTNAME]: " HOSTNAME
     HOSTNAME=${HOSTNAME:-$DEFAULT_HOSTNAME}
     
-    # Ubuntu version
+    # Ubuntu version (choose from available ubuntu templates)
     echo
-    print_status "Available Ubuntu versions:"
-    echo "  22 - Ubuntu 22.04 LTS"
-    echo "  24 - Ubuntu 24.04 LTS (recommended)"
-    read -p "Select Ubuntu version [$DEFAULT_UBUNTU_VERSION]: " UBUNTU_VERSION
-    UBUNTU_VERSION=${UBUNTU_VERSION:-$DEFAULT_UBUNTU_VERSION}
-    
+    print_status "Fetching available Ubuntu templates from pveam..."
+    local ubuntu_majors
+    ubuntu_majors=$(get_ubuntu_major_options)
+    if [ -z "$ubuntu_majors" ]; then
+        print_error "No Ubuntu templates available from pveam available"
+        exit 1
+    fi
+
+    echo "Available Ubuntu major versions:" 
+    local default_major=""
+    while IFS= read -r maj; do
+        if [ -z "$default_major" ]; then
+            default_major="$maj"
+        fi
+        echo "  $maj) Ubuntu $maj.04 (from available templates)"
+    done <<< "$ubuntu_majors"
+
+    if [ -z "$default_major" ]; then
+        print_error "No Ubuntu major versions found"
+        exit 1
+    fi
+
+    read -p "Select Ubuntu major version [$default_major]: " major_choice
+    major_choice=${major_choice:-$default_major}
+    if ! echo "$ubuntu_majors" | grep -xq "$major_choice"; then
+        print_error "Invalid choice: $major_choice"
+        exit 1
+    fi
+    UBUNTU_VERSION=$major_choice
+
+    print_status "Selected Ubuntu major version: $UBUNTU_VERSION"
+
     # Deployment type
     echo
     print_status "Deployment types:"
@@ -185,10 +221,9 @@ interactive_config() {
     BRIDGE=${BRIDGE:-$DEFAULT_BRIDGE}
     
     # Storage location
-    STORAGE=$(pvesm status | grep -E '^(local|local-lvm)' | head -n1 | awk '{print $1}')
-    if [ -z "$STORAGE" ]; then
-        read -p "Enter storage location: " STORAGE
-    fi
+    STORAGE_INFO=$(pvesm status -content rootdir 2>/dev/null | tail -n +2)
+    STORAGE=$(echo "$STORAGE_INFO" | awk '{print $1}' | head -1)
+    STORAGE=${STORAGE:-local-lvm}
     
     echo
     print_status "=== Configuration Summary ==="
