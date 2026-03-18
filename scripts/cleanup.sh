@@ -63,11 +63,26 @@ cleanup_container() {
 }
 
 # Function to create a final backup before cleanup
+select_backup_storage() {
+    local STORAGE_INFO STORAGE
+
+    # Only consider storage locations that are active and usable for backup
+    STORAGE_INFO=$(pvesm status -content backup 2>/dev/null | tail -n +2 | awk '$3 == "active"')
+    STORAGE=$(echo "$STORAGE_INFO" | awk '{print $1}' | head -1)
+
+    # Fallback: if nothing matches, prefer local-lvm
+    STORAGE=${STORAGE:-local-lvm}
+    echo "$STORAGE"
+}
+
 create_final_backup() {
     local vmid=$1
     local backup_dir="/var/lib/vz/dump"
     local timestamp=$(date +%Y%m%d_%H%M%S)
-    
+    local storage
+    storage="$(select_backup_storage)"
+
+
     print_status "Creating final backup before cleanup..."
     
     # Create backup directory if it doesn't exist
@@ -75,7 +90,7 @@ create_final_backup() {
     
     # Create container backup
     if pct status $vmid &>/dev/null; then
-        vzdump $vmid --compress lzo --storage local --tmpdir /tmp
+        vzdump $vmid --compress lzo --storage "$storage" --tmpdir /tmp
         print_success "Container backup created in $backup_dir"
     fi
     
